@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tenant
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  username  String   @unique @db.VarChar(100)
+  password  String   @db.VarChar(100)
+  units     Unit[]
+}
+
+model Tenant {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  Rent      Rent[]
+}
+
+// Property
+model Unit {
+  id       Int    @id @default(autoincrement())
+  address  String @db.VarChar(100)
+  location String @default("New Brunswick")
+  unitType String @default("Apartment")
+  userId   Int?
+  User     User?  @relation(fields: [userId], references: [id])
+  rent     Rent[]
+
+  @@unique([id, userId])
+}
+
+model Rent {
+  id       String   @id @default(uuid())
+  rentedAt DateTime @default(now())
+  tenantId Int
+  unitId   Int
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  unit     Unit     @relation(fields: [unitId], references: [id])
+}
+
+// model Location {
+//   id           Int    @id @default(autoincrement())
+//   abbreviation String @unique
+//   province     String @unique
+//   units        Unit[]
+// }
+
+// enum Location {
+//   NB @map("New Brunswick")
+//   ON @map("Ontario")
+//   AB @map("Alberta")
+//   BC @map("British Columbia")
+//   QC @map("Quebec")
+// }
+
+// enum UnitType {
+//   Apartment
+//   House
+//   Condo
+//   Room
+// }
